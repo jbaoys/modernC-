@@ -1,0 +1,2 @@
+#define Constexpr_VERSION_MAJOR @Constexpr_VERSION_MAJOR@
+#define Constexpr_VERSION_MINOR @Constexpr_VERSION_MINOR@
