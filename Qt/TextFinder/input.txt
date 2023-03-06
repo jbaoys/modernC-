@@ -1,0 +1,7 @@
+QT creator
+
+Test test
+For each file somewidget.ui, during the build process ui_somewidget.h and ui_somewidget.cpp will be created. The tool used to generate them is uic. All you have to make sure that the .ui files are added to the .pro file of your project, along with the other source and header files, like this:
+
+ FORMS += somewidget.ui
+qmake/make will automatically generate and build the .cpp and .h files for somewidget.ui.
