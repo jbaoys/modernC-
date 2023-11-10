@@ -40,11 +40,14 @@ TEST(VmfAttributeTest, IntAttribute_setget2) {
 }
 
 TEST(VmfAttributeTest, IntAttribute_encode) {
+    std::array<int8_t, 3> data = {-1, 2, 7};
     IntAttribute<int8_t, 7, -3, 10> myInt(7);
     uint8_t tobuf[128];
+    EXPECT_EQ(7, myInt.getValue());
     EXPECT_TRUE(myInt.encode(tobuf));
     std::cout << tobuf << '\n';
     IntAttribute<int8_t, 7, -3, 10, 3> myInt2({-1,2,7});
+    EXPECT_EQ(data, myInt2.getValues());
     EXPECT_TRUE(myInt2.encode(tobuf));
     std::cout << tobuf << '\n';
 }
