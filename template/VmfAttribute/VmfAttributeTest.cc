@@ -1,7 +1,7 @@
 #include <gtest/gtest.h>
 #include <gmock/gmock.h>  // Brings in gMock.
 
-#include "VmfAttribute.hh"
+#include "VmfAttribute.h"
 #if 0
 class VmfAttributeTest : public ::testing::TestWithParam<std::tuple<uint8_t, int8_t, int8_t>> {
    protected:

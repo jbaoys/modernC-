@@ -19,6 +19,7 @@ enable_testing()
 add_executable(
   VmfAttributeTest
   VmfAttributeTest.cc
+  VmfAttributeBufferTest.cc
 )
 target_link_libraries(
   VmfAttributeTest
