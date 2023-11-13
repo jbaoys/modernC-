@@ -83,6 +83,13 @@ class VmfAttributeBuffer {
         return true;
     }
 
+    bool setContentSize(size_t size) {
+        if (size > size_) return false;
+        lastByte_ = size;
+        lastBitInByte_ = 0;
+        return true;
+    }
+
    private:
     void increaseBit() {
         bitInByte_++;

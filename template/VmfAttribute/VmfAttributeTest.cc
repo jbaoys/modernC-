@@ -82,19 +82,59 @@ TEST(VmfAttributeTest, IntAttribute_setgetArray) {
 
 TEST(VmfAttributeTest, IntAttribute_encode) {
     IntAttribute<int8_t, 7, -64, 63> myInt7(35);
-    uint8_t tobuf[128];
+    const size_t sz = 32;
+    uint8_t buf[sz];
+    VmfAttributeBuffer tobuf(buf, sz);
+    tobuf.purgeBuffer();
     EXPECT_EQ(35, myInt7.getValue());
     EXPECT_TRUE(myInt7.encode(tobuf));
-    std::cout << tobuf << '\n';
+    EXPECT_EQ(0x23, buf[0]);
+    VmfDebug("Buffer content:\n", hexDataStr(buf,sz));
 }
 
 TEST(VmfAttributeTest, IntAttribute_encodeArray) {
     std::array<int8_t,3> varify = {-64, 0, 63};
     IntAttribute<int8_t, 7, -64, 63, 3> myInt7Array({-64,0,63});
-    uint8_t tobuf[128];
+    const size_t sz = 32;
+    uint8_t buf[sz];
+    VmfAttributeBuffer tobuf(buf, sz);
+    tobuf.purgeBuffer();
     EXPECT_EQ(varify, myInt7Array.getValues());
     EXPECT_TRUE(myInt7Array.encode(tobuf));
-    std::cout << tobuf << '\n';
+    EXPECT_EQ(0x40, buf[0]);
+    EXPECT_EQ(0xC0, buf[1]);
+    EXPECT_EQ(0x0F, buf[2]);
+    VmfDebug("Buffer content:\n", hexDataStr(buf,sz));
 }
-#if 0
-#endif
+
+TEST(VmfAttributeTest, IntAttribute_decode) {
+    IntAttribute<int8_t, 7, -64, 63> myInt7;
+    const size_t sz = 32;
+    uint8_t buf[sz] = { 0x40, 0xC0, 0x0F };
+    VmfAttributeBuffer buffer(buf, sz);
+    buffer.setContentSize(3);
+    buffer.resetIterator();
+
+    EXPECT_EQ(0, myInt7.getValue());
+    EXPECT_TRUE(myInt7.decode(buffer));
+    EXPECT_EQ(-64, myInt7.getValue());
+    EXPECT_TRUE(myInt7.decode(buffer));
+    EXPECT_EQ(0, myInt7.getValue());
+    EXPECT_TRUE(myInt7.decode(buffer));
+    EXPECT_EQ(63, myInt7.getValue());
+}
+
+TEST(VmfAttributeTest, IntAttribute_decodeArray) {
+    std::array<int8_t,3> varify0 = {0, 0, 0};
+    std::array<int8_t,3> varify = {-64, 0, 63};
+    IntAttribute<int8_t, 7, -64, 63, 3> myInt7Array;
+    const size_t sz = 32;
+    uint8_t buf[sz] = { 0x40, 0xC0, 0x0F };
+    VmfAttributeBuffer buffer(buf, sz);
+    buffer.setContentSize(3);
+    buffer.resetIterator();
+
+    EXPECT_EQ(varify0, myInt7Array.getValues());
+    EXPECT_TRUE(myInt7Array.decode(buffer));
+    EXPECT_EQ(varify, myInt7Array.getValues());
+}

@@ -2,11 +2,12 @@
 #include <string>
 #include <iostream>
 #include <sstream>  //std::stringstream
+#include <iomanip>  //std::setfill('0')
 
 // using variadic templates
 
 // non template function to call with zero arguments
-void concatenateStr(std::stringstream &ss) {
+inline void concatenateStr(std::stringstream &ss) {
 }
 
 // base template with 1 argument (which will be called from the variadic one).
@@ -38,11 +39,15 @@ std::string variadicStr(Args... args) {
     return ss.str();
 }
 
-#define DEBUG 1
+std::string hexDataStr(const void *buffer, size_t N);
+
+//#define DEBUG 1
 #ifdef DEBUG
 #define VmfDebug(...) std::cout << variadicStr(__VA_ARGS__) << '\n'
+#define VmfDbg(...) std::cout << variadicStr(__VA_ARGS__)
 #else
 #define VmfDebug(...)
+#define VmfDbg(...)
 #endif
 #define VmfError(...) std::cout << "[VMF ERR]:\"" << __PRETTY_FUNCTION__ << "\"" <<\
     variadicStr(__VA_ARGS__) << '\n'
