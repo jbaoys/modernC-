@@ -72,6 +72,8 @@ TEST(VmfAttributeTest, IntAttribute_setget) {
 TEST(VmfAttributeTest, IntAttribute_setgetArray) {
     IntAttribute<int8_t, 7, -64, 63, 3> myInt7Array;
     EXPECT_EQ(21, myInt7Array.getNumberOfBits());
+    //int8_t setValues[4] = {-64, 0, 63, 37};
+    //error: no matching function for call to ‘IntAttribute<signed char, 7, -64, 63, 3>::setValues(int8_t [4])’
     int8_t setValues[3] = {-64, 0, 63};
     EXPECT_TRUE(myInt7Array.setValues(setValues));
     int8_t readValues[3];
@@ -138,3 +140,23 @@ TEST(VmfAttributeTest, IntAttribute_decodeArray) {
     EXPECT_TRUE(myInt7Array.decode(buffer));
     EXPECT_EQ(varify, myInt7Array.getValues());
 }
+
+TEST(VmfAttributeTest, IntAttribute_unsignT) {
+    enum e0 {};
+    unsignT<e0> a0;
+    a0 = unsignT<e0>(-1);
+    VmfDebug("unsingT<e0> of a0 = ", a0, '\n');
+    VmfDebug("minVal<uint8_t,8>=", int64_t(minVal<uint8_t,8>()), '\n');
+    VmfDebug("maxVal<uint8_t,8>=", int64_t(maxVal<uint8_t,8>()), '\n');
+    VmfDebug("minVal<uint8_t,7>=", int64_t(minVal<uint8_t,7>()), '\n');
+    VmfDebug("maxVal<uint8_t,4>=", int64_t(maxVal<uint8_t,4>()), '\n');
+    VmfDebug("minVal<int8_t,8>=", int64_t(minVal<int8_t,8>()), '\n');
+    VmfDebug("maxVal<int8_t,8>=", int64_t(maxVal<int8_t,8>()), '\n');
+    VmfDebug("minVal<int8_t,7>=", int64_t(minVal<int8_t,7>()), '\n');
+    VmfDebug("maxVal<int8_t,4>=", int64_t(maxVal<int8_t,4>()), '\n');
+    VmfDebug("minVal<int,3>=", minVal<int,3>(), '\n');
+    VmfDebug("maxVal<int,3>=", int64_t(maxVal<int,3>()), '\n');
+    VmfDebug("minVal<e0,3>=", minVal<e0,3>(), '\n');
+    VmfDebug("maxVal<e0,3>=", int64_t(maxVal<e0,3>()), '\n');
+}
+

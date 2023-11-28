@@ -3,6 +3,7 @@
                     // ...
 #include <cstddef>  // size_t
 #include <string.h> // memset
+#include <climits>
 #include "VmfDebug.h"
 
 class VmfAttributeBuffer {
@@ -93,7 +94,7 @@ class VmfAttributeBuffer {
    private:
     void increaseBit() {
         bitInByte_++;
-        if (bitInByte_ >= 8) {
+        if (bitInByte_ >= CHAR_BIT) {
             bitInByte_ = 0;
             currentByte_++;
         }

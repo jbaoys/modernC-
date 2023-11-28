@@ -41,7 +41,7 @@ std::string variadicStr(Args... args) {
 
 std::string hexDataStr(const void *buffer, size_t N);
 
-//#define DEBUG 1
+#define DEBUG 1
 #ifdef DEBUG
 #define VmfDebug(...) std::cout << variadicStr(__VA_ARGS__) << '\n'
 #define VmfDbg(...) std::cout << variadicStr(__VA_ARGS__)

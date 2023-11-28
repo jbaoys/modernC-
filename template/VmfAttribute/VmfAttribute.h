@@ -37,15 +37,22 @@ class PlainGroup : public VmfAttribute {
     virtual ~PlainGroup() = default;
 };
 
+template<class T>
+using unsignT = typename std::make_unsigned<T>::type;
+
 // Calculate minium valid value based on bit width
 template<typename T, uint8_t N>
 constexpr T minVal() {
-    return (N < sizeof(T)*8) ? -(T(1)<<(N-1)) : T(1) << (N-1);
+    //return (N < sizeof(T)*8) ? -(T(1)<<(N-1)) : T(1) << (N-1);
+    return (T(-1)<T(0)) ? ((N < sizeof(T)*8) ? static_cast<T>(-(unsignT<T>(1)<<(N-1))) :
+            T(unsignT<T>(1) << (N-1))) : T(0);
 };
 // Calculate maximum valid value based on bit width
 template<typename T, uint8_t N>
 constexpr T maxVal() {
-    return (N < sizeof(T)*8) ? ((T(1)<<(N-1)) - 1) : T(~(T(1) << (N-1)));
+    //return (N < sizeof(T)*8) ? ((T(1)<<(N-1)) - 1) : T(~(T(1) << (N-1)));
+    return (T(-1)<T(0)) ? T(((unsignT<T>(1)<<(N-1)) - 1)) :
+           T((unsignT<T>(1)<<N)-1);
 };
 
 /**
@@ -176,6 +183,8 @@ class IntAttribute : public VmfPlainAttribute {
 
     // set values from a plain array reference
     bool setValues(T (&values)[N]) {
+    //bool setValues(T values[N]) {
+        VmfDbg("call setValues\n");
         for ( int i=0; i<N; i++ ) {
             if (!isValid(values[i])) return false;
             else values_[i] = values[i];
