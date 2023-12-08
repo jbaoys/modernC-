@@ -2,6 +2,7 @@
 #include <cstdint>  // Fixed width integer types (since C++11), int8_t, int16_t,
                     // ...
 #include <cstddef>  // size_t
+#include <climits>
 #include <string.h> // memset
 #include <climits>
 #include "VmfDebug.h"
@@ -26,6 +27,11 @@ class VmfAttributeBuffer {
     size_t getContentSize()
     {
         return lastBitInByte_ ? lastByte_ + 1 : lastByte_;
+    }
+
+    size_t getContentBitSize()
+    {
+        return lastByte_ * CHAR_BIT + lastBitInByte_;
     }
 
     void fillVoid() {
@@ -56,9 +62,61 @@ class VmfAttributeBuffer {
         increaseBit();
         lastByte_ = currentByte_;
         lastBitInByte_ = bitInByte_;
-        VmfDebug("bitInByte_=",bitInByte_);
+        //VmfDebug("bitInByte_=",bitInByte_);
 
         return true;
+    }
+
+    bool appendBits(const uint64_t &bits, size_t numBits) {
+        bool retVal = false;
+        union byte64 {
+            byte64(const uint64_t& v) : U64(v) {}
+            uint64_t U64;
+            uint8_t U8[sizeof(U64)];
+        };
+        byte64 dataBits = bits;
+        int endingPos = numBits + lastBitInByte_;
+        //check numBits
+        size_t requiredBytes = static_cast<size_t>((endingPos >> 3) +
+                               ((endingPos & 0x7) != 0));
+        if ((requiredBytes + currentByte_) <= size_) {
+            bool tail = false;
+            uint8_t mask = uint8_t((~0u) << lastBitInByte_);
+            bool uneven = (lastBitInByte_ != 0);
+            uint8_t shiftBits = (CHAR_BIT - lastBitInByte_);
+            while (endingPos > 0) {
+                if (endingPos < CHAR_BIT) {
+                    mask &= uint8_t((1u << endingPos) - 1);
+                    tail = true;
+                    uneven = true;
+                }
+                if (uneven) {
+                    // wipe out setting bits
+                    buffer_[currentByte_] &= uint8_t(~mask);
+                    // set bits
+                    buffer_[currentByte_] |= uint8_t(mask &
+                        (dataBits.U8[0] << (CHAR_BIT-shiftBits)));
+                    dataBits.U64 >>= shiftBits;
+                    shiftBits = CHAR_BIT;
+                    uneven = false;
+                } else {
+                    buffer_[currentByte_] = dataBits.U8[0];
+                    dataBits.U64 >>= shiftBits;
+                }
+                if (!tail) {
+                    currentByte_++;
+                }
+
+                bitInByte_ = endingPos & 0x7;
+                endingPos -= shiftBits;
+            }
+            lastByte_ = currentByte_;
+            lastBitInByte_ = bitInByte_;
+
+            retVal = true;
+        }
+
+        return retVal;
     }
 
     bool getBit(uint8_t &bit) {
@@ -89,6 +147,21 @@ class VmfAttributeBuffer {
         lastByte_ = size;
         lastBitInByte_ = 0;
         return true;
+    }
+
+    bool setContentBitSize(size_t numBits) {
+        //check numBits
+        bool retVal = false;
+        size_t extraBytes = numBits >> 3;
+        size_t extraBits = numBits & 0x7;
+        size_t requiredBytes = extraBytes + (extraBits != 0);
+        //VmfDebug("requiredBytes=", requiredBytes);
+        if (requiredBytes <= size_) {
+            lastByte_ = extraBytes;
+            lastBitInByte_ = extraBits;
+            retVal = true;
+        }
+        return retVal;
     }
 
    private:
