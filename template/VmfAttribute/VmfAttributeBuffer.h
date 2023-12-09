@@ -9,6 +9,13 @@
 
 class VmfAttributeBuffer {
    public:
+    static const size_t SZU64 = sizeof(uint64_t);
+    union byte64 {
+        byte64(const uint64_t& v) : U64(v) {}
+        byte64() : U64(0) {}
+        uint64_t U64;
+        uint8_t U8[sizeof(U64)];
+    };
     VmfAttributeBuffer(uint8_t *buffer, size_t size)
     : buffer_(buffer)
     , size_(size)
@@ -27,6 +34,11 @@ class VmfAttributeBuffer {
     size_t getContentSize()
     {
         return lastBitInByte_ ? lastByte_ + 1 : lastByte_;
+    }
+
+    size_t getCurrentBitPos()
+    {
+        return currentByte_ * CHAR_BIT + bitInByte_;
     }
 
     size_t getContentBitSize()
@@ -69,47 +81,37 @@ class VmfAttributeBuffer {
 
     bool appendBits(const uint64_t &bits, size_t numBits) {
         bool retVal = false;
-        union byte64 {
-            byte64(const uint64_t& v) : U64(v) {}
-            uint64_t U64;
-            uint8_t U8[sizeof(U64)];
-        };
-        byte64 dataBits = bits;
-        int endingPos = numBits + lastBitInByte_;
+        int endingPos = numBits + bitInByte_;
+        uint8_t newBitInByte = uint8_t(endingPos & 0x7);
         //check numBits
         size_t requiredBytes = static_cast<size_t>((endingPos >> 3) +
-                               ((endingPos & 0x7) != 0));
+                               (newBitInByte != 0));
         if ((requiredBytes + currentByte_) <= size_) {
-            bool tail = false;
-            uint8_t mask = uint8_t((~0u) << lastBitInByte_);
-            bool uneven = (lastBitInByte_ != 0);
-            uint8_t shiftBits = (CHAR_BIT - lastBitInByte_);
-            while (endingPos > 0) {
-                if (endingPos < CHAR_BIT) {
-                    mask &= uint8_t((1u << endingPos) - 1);
-                    tail = true;
-                    uneven = true;
-                }
-                if (uneven) {
-                    // wipe out setting bits
-                    buffer_[currentByte_] &= uint8_t(~mask);
-                    // set bits
-                    buffer_[currentByte_] |= uint8_t(mask &
-                        (dataBits.U8[0] << (CHAR_BIT-shiftBits)));
-                    dataBits.U64 >>= shiftBits;
-                    shiftBits = CHAR_BIT;
-                    uneven = false;
-                } else {
-                    buffer_[currentByte_] = dataBits.U8[0];
-                    dataBits.U64 >>= shiftBits;
-                }
-                if (!tail) {
-                    currentByte_++;
-                }
+            byte64 dataBits = bits;
+            uint8_t firstByteMask = uint8_t((1u << bitInByte_) - 1);
+            uint8_t lastByteMask = uint8_t((1u << newBitInByte) - 1);
+            uint8_t overflowByte = ( dataBits.U8[SZU64-1] >>
+                                     (CHAR_BIT - bitInByte_) );
 
-                bitInByte_ = endingPos & 0x7;
-                endingPos -= shiftBits;
+            dataBits.U64 <<= bitInByte_;
+            dataBits.U8[0] |= (buffer_[currentByte_] & firstByteMask);
+            int index =0;
+            for (; index < requiredBytes && index < SZU64; ++index) {
+                buffer_[currentByte_ + index] = dataBits.U8[index];
             }
+            if (index < requiredBytes) {
+                buffer_[currentByte_ + index] = overflowByte;
+                ++index;
+            }
+            --index;
+            currentByte_ += index;
+            bitInByte_ = newBitInByte;
+            if (lastByteMask == 0) {
+                currentByte_++;
+            } else {
+                buffer_[currentByte_] &= lastByteMask;
+            }
+
             lastByte_ = currentByte_;
             lastBitInByte_ = bitInByte_;
 
@@ -118,6 +120,7 @@ class VmfAttributeBuffer {
 
         return retVal;
     }
+
 
     bool getBit(uint8_t &bit) {
         size_t conSz = getContentSize();
@@ -140,6 +143,64 @@ class VmfAttributeBuffer {
         increaseBit();
 
         return true;
+    }
+
+    bool getBits(uint64_t &bits, size_t numBits) {
+        bool retVal = false;
+        int endingPos = numBits + bitInByte_;
+        size_t newBitInByte = static_cast<size_t>(endingPos & 0x7);
+        //check numBits
+        size_t requiredBytes = static_cast<size_t>((endingPos >> 3) +
+                               (newBitInByte != 0));
+        size_t newConBitSz = getCurrentBitPos() + numBits;
+        //VmfDebug("newConBitSz=",newConBitSz);
+        //VmfDebug("currentConBitSize=",getContentBitSize());
+
+        if ((numBits <= SZU64*CHAR_BIT) && (newConBitSz <= getContentBitSize())) {
+            byte64 dataBits;
+            uint8_t firstByteMask = uint8_t((1u << bitInByte_) - 1);
+            uint8_t lastByteMask = uint8_t((1u << newBitInByte) - 1);
+            uint8_t higherByte = 0;
+
+            //dataBits.U8[0] |= (buffer_[currentByte_] & firstByteMask);
+            int index =0;
+            bool useHigherByte = false;
+            //VmfDebug("requiredBytes=",requiredBytes);
+            //VmfDebug("bitInByte_=",bitInByte_);
+            for (; index < requiredBytes && index < SZU64; ++index) {
+                dataBits.U8[index] = buffer_[currentByte_ + index];
+            }
+            if (index < requiredBytes) {
+                higherByte = buffer_[currentByte_ + index];
+                if (lastByteMask != 0) {
+                    higherByte &= lastByteMask;
+                }
+                useHigherByte = true;
+            } else {
+                --index;
+                if (lastByteMask != 0) {
+                    dataBits.U8[index] &= lastByteMask;
+                }
+            }
+            dataBits.U64 >>= bitInByte_;
+            if (useHigherByte) {
+                dataBits.U8[SZU64-1] |= (higherByte << (CHAR_BIT - bitInByte_));
+            }
+            currentByte_ += index;
+            bitInByte_ = newBitInByte;
+            if (lastByteMask == 0) {
+                currentByte_++;
+            }
+            //VmfDebug("dataBits.U64=", std::hex, dataBits.U64);
+            bits = dataBits.U64;
+            retVal = true;
+        } else {
+            VmfError("Reach the end of buffer with content bit size of ",
+                    getContentBitSize(), "\n new size is ", newConBitSz,
+                    ", numBits=",numBits,", SZU64=",SZU64);
+        }
+
+        return retVal;
     }
 
     bool setContentSize(size_t size) {

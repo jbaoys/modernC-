@@ -82,6 +82,14 @@ TEST(VmfAttributeBufferTest, appendBits) {
     VmfDebug("Buffer content:\n", hexDataStr(buf, myBuffer3.getContentSize()));
     EXPECT_TRUE(myBuffer3.appendBits(-1, 6));
     VmfDebug("Buffer content:\n", hexDataStr(buf, myBuffer3.getContentSize()));
+
+    for (size_t i=0; i<=64; ++i) {
+        myBuffer3.purgeBuffer();
+        EXPECT_TRUE(myBuffer3.appendBits(0x8877665544332211, i));
+    }
+    myBuffer3.purgeBuffer();
+    EXPECT_FALSE(myBuffer3.appendBits(0x8877665544332211, 65));
+    VmfDebug("Buffer content:\n", hexDataStr(buf, myBuffer3.getContentSize()));
 }
 
 TEST(VmfAttributeBufferTest, getBit) {
@@ -117,4 +125,49 @@ TEST(VmfAttributeBufferTest, getBit) {
     EXPECT_TRUE(myBuffer.getBit(bit));
     EXPECT_EQ(0x01, bit);
     EXPECT_FALSE(myBuffer.getBit(bit));
+}
+
+
+TEST(VmfAttributeBufferTest, getBits) {
+    uint8_t buf[256];
+    VmfAttributeBuffer myBuffer3(buf, 8);
+    EXPECT_TRUE(myBuffer3.appendBits(0x8877665544332211, 50));
+    VmfDebug("Buffer content:\n", hexDataStr(buf, myBuffer3.getContentSize()));
+    EXPECT_TRUE(myBuffer3.appendBits(-1, 6));
+    VmfDebug("Buffer content:\n", hexDataStr(buf, myBuffer3.getContentSize()));
+    myBuffer3.resetIterator();
+    uint64_t myRead;
+    EXPECT_FALSE(myBuffer3.getBits(myRead, 64));
+    EXPECT_TRUE(myBuffer3.getBits(myRead, 56));
+    VmfDebug("myRead=", std::hex, myRead);
+    myBuffer3.resetIterator();
+    EXPECT_TRUE(myBuffer3.getBits(myRead, 6));
+    VmfDebug("myRead=", std::hex, myRead);
+    EXPECT_TRUE(myBuffer3.getBits(myRead, 8));
+    VmfDebug("myRead=", std::hex, myRead);
+    EXPECT_TRUE(myBuffer3.getBits(myRead, 13));
+    VmfDebug("myRead=", std::hex, myRead);
+
+    VmfAttributeBuffer myBuffer0(buf, 8);
+    myBuffer0.purgeBuffer();
+    EXPECT_TRUE(myBuffer0.appendBits(123, 7));
+    EXPECT_TRUE(myBuffer0.appendBits(32762, 15));
+    EXPECT_TRUE(myBuffer0.appendBits(2147483647, 31));
+    VmfDebug("123, 32762, 2147483647, Buffer content:\n", hexDataStr(buf, myBuffer3.getContentSize()));
+    myBuffer0.resetIterator();
+    EXPECT_TRUE(myBuffer0.getBits(myRead, 7));
+    EXPECT_EQ(123, myRead);
+    EXPECT_TRUE(myBuffer0.getBits(myRead, 15));
+    EXPECT_EQ(32762, myRead);
+    EXPECT_TRUE(myBuffer0.getBits(myRead, 31));
+    EXPECT_EQ(2147483647, myRead);
+
+    myBuffer3.purgeBuffer();
+    EXPECT_TRUE(myBuffer3.appendBits(0x8877665544332211, 64));
+    for (size_t i=0; i<=64; ++i) {
+        myBuffer3.resetIterator();
+        EXPECT_TRUE(myBuffer3.getBits(myRead, i));
+    }
+    myBuffer3.resetIterator();
+    EXPECT_FALSE(myBuffer3.getBits(myRead, 65));
 }
