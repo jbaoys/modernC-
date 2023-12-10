@@ -92,6 +92,15 @@ TEST(VmfAttributeTest, IntAttribute_encode) {
     EXPECT_TRUE(myInt7.encode(tobuf));
     EXPECT_EQ(0x23, buf[0]);
     VmfDebug("Buffer content:\n", hexDataStr(buf,sz));
+    IntAttribute<int64_t, 40, -5497558139, 5497558139> myInt40(-5497558139);
+    tobuf.purgeBuffer();
+    EXPECT_TRUE(myInt40.encode(tobuf));
+    VmfDebug("Buffer content:\n", hexDataStr(buf,tobuf.getContentSize()));
+    tobuf.resetIterator();
+    IntAttribute<int64_t, 40, -5497558139, 5497558139> myInt40_2;
+
+    EXPECT_TRUE(myInt40_2.decode(tobuf));
+    EXPECT_EQ(-5497558139, myInt40_2.getValue());
 }
 
 TEST(VmfAttributeTest, IntAttribute_encodeArray) {

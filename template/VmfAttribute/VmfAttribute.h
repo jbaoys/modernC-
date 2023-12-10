@@ -176,7 +176,7 @@ class IntAttribute : public VmfPlainAttribute {
                 return false;
             }
 
-            VmfDbg("<", (int)values_[i], ">");
+            VmfDbg("<", (int64_t)values_[i], ">");
         }
         return true;
     }
