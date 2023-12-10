@@ -108,6 +108,12 @@ class IntAttribute : public VmfPlainAttribute {
             }
 
             VmfDbg("<", (int)values_[i], ">");
+            uint64_t data = static_cast<uint64_t>(values_[i]);
+            if (!toBuffer.appendBits(data, numbits)) {
+                VmfError("Fail to append bits for values_[", i, "]");
+                return false;
+            }
+#if 0
             uint8_t bit;
             uint8_t mask = 1;
             for (uint8_t j=0; j<numbits; j++) {
@@ -119,12 +125,27 @@ class IntAttribute : public VmfPlainAttribute {
                 }
                 mask <<= 1;
             }
+#endif
         }
         return true;
     }
 
     bool decode(VmfAttributeBuffer &fromBuffer) {
         for (int i=0; i<N; i++) {
+            uint64_t data;
+            if (!fromBuffer.getBits(data, numbits)) {
+                VmfError("Fail to get bits form values_[", i, "]");
+                return false;
+            }
+            values_[i] = static_cast<T>(data);
+            T mask = static_cast<T>(T(1) << (numbits-1));
+            if ((mask & values_[i]) != 0) {
+                // set sign
+                values_[i] |= Tmin;
+            } else {
+                values_[i] &= Tmax;
+            }
+#if 0
             uint8_t bit;
             uint8_t mask = 1;
             for (uint8_t j=0; j<numbits; j++) {
@@ -146,6 +167,7 @@ class IntAttribute : public VmfPlainAttribute {
             } else {
                 values_[i] &= Tmax;
             }
+#endif
 
             if (!isValid(values_[i])) {
                 VmfError("Invalid decoded IntAttribute values_[", i, "]= ",
