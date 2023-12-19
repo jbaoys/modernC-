@@ -5,7 +5,10 @@
 #include <climits>
 #include <string.h> // memset
 #include <climits>
+#include <endian.h>
 #include "VmfDebug.h"
+
+constexpr bool isBigEndian = __BYTE_ORDER__ == __ORDER_BIG_ENDIAN__;
 
 class VmfAttributeBuffer {
    public:

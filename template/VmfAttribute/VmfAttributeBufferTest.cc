@@ -3,6 +3,17 @@
 
 #include "VmfAttributeBuffer.h"
 
+
+TEST(VmfAttributeBufferTest, ENDIAN) {
+    if constexpr(isBigEndian) {
+        EXPECT_TRUE(isBigEndian);
+        VmfDebug("THIS TEST DETECT THE ENDIAN AS BIG ENDIAN!\n");
+    } else {
+        EXPECT_FALSE(isBigEndian);
+        VmfDebug("THIS TEST DETECT THE ENDIAN AS LITTLE ENDIAN!\n");
+    }
+}
+
 TEST(VmfAttributeBufferTest, Constructor) {
     uint8_t buf[256];
     VmfAttributeBuffer myBuffer(buf, 256);
