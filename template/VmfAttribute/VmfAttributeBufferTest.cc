@@ -21,6 +21,31 @@ TEST(VmfAttributeBufferTest, Constructor) {
     EXPECT_EQ(0, myBuffer.getContentSize());
 }
 
+TEST(VmfAttributeBufferTest, data64bits) {
+    uint8_t buf[256];
+    VmfAttributeBuffer myBuffer(buf, 256);
+
+    VmfAttributeBuffer::data64bits d64(0xa123456789abcdef);
+    swap_endian(d64.U64);
+    EXPECT_EQ(0xefcdab89674523a1, d64.U64);
+    swap_endian(d64.U64);
+    EXPECT_EQ(0xa123456789abcdef, d64.U64);
+    if constexpr(isBigEndian) {
+        EXPECT_EQ(0xa1, d64.U8[u64LowByte]);
+    } else {
+        VmfDebug("LITTLE ENDIAN data64bits tests:\n");
+        EXPECT_EQ(0xa1, d64.U8[u64HighByte]);
+        EXPECT_EQ(0xef, d64.U8[u64LowByte]);
+        d64.leftShift(4);
+        EXPECT_EQ(0x12, d64.U8[u64HighByte]);
+        EXPECT_EQ(0xf0, d64.U8[u64LowByte]);
+        EXPECT_EQ(0x0a, d64.U8[sizeof(uint64_t)]);
+        d64.rightShift(4);
+        EXPECT_EQ(0xa1, d64.U8[u64HighByte]);
+        EXPECT_EQ(0xef, d64.U8[u64LowByte]);
+    }
+}
+
 TEST(VmfAttributeBufferTest, getContentSize) {
     uint8_t buf[256];
     VmfAttributeBuffer myBuffer(buf, 256);
@@ -81,11 +106,17 @@ TEST(VmfAttributeBufferTest, appendBits) {
     myBuffer2.purgeBuffer();
     EXPECT_TRUE(myBuffer2.appendBits(0x8877665544332211, 24));
     EXPECT_EQ(3, myBuffer2.getContentSize());
+    EXPECT_EQ(0x11, buf[0]);
+    EXPECT_EQ(0x22, buf[1]);
+    EXPECT_EQ(0x33, buf[2]);
     VmfDebug("Buffer content:\n", hexDataStr(buf, myBuffer2.getContentSize()));
 
     VmfAttributeBuffer myBuffer3(buf, 8);
     EXPECT_TRUE(myBuffer3.appendBits(0xabcdef, 7));
+    VmfDebug("Buffer content:\n", hexDataStr(buf, myBuffer3.getContentSize()));
+    EXPECT_EQ(0x6f, buf[0]);
     EXPECT_TRUE(myBuffer3.appendBits(0x1, 1));
+    EXPECT_EQ(0xef, buf[0]);
     EXPECT_FALSE(myBuffer3.appendBits(0x8877665544332211, 64));
     VmfDebug("Buffer content:\n", hexDataStr(buf, myBuffer3.getContentSize()));
     EXPECT_FALSE(myBuffer3.appendBits(0x8877665544332211, 57));
