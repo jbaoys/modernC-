@@ -37,9 +37,10 @@ int main(int argc, char* argv[])
     myMsg.alignFooter();
     std::cout << "myMsg raw data =\n" << hexDataStr(static_cast<void*>(&myMsg), sizeof(myMsg)) << '\n';
 
-    LICD::CmdDelayPair myCmds[2] = { {0xa0, 0x1234}, {0xb0, 0x5678} };
+    constexpr LICD::CmdDelayPair myCmds[2] = { {0xa0, 0x1234}, {0xb0, 0x5678} };
 
-    LICD::MultiCmdMsg pcs(0x2c, myCmds, 2);
+    const LICD::MultiCmdMsg C_PCS(0x2c, myCmds, 2);
+    LICD::MultiCmdMsg pcs(C_PCS);
     pcs.setSid(0x5a);
     pcs.calculateFcs();
     pcs.alignFooter();

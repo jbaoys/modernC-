@@ -13,6 +13,8 @@ constexpr int factorial(int n) {
     return n > 0 ? n * factorial( n - 1 ) : 1;
 }
 
+constexpr int myConstInt = 123;
+
 int main(int argc, char* argv[])
 {
     if (argc < 2) {
@@ -34,6 +36,12 @@ int main(int argc, char* argv[])
     constexpr int v = 7;
     constexpr int f = factorial(v);
     std::cout << v << "! = " << f << '\n';
+
+    std::cout << "myConstInt = " << myConstInt << "\n";
+
+    //myConstInt = 321; //error: assignment of read-only variable 
+
+    std::cout << "myConstInt = " << myConstInt << "\n";
 
     return 0;
 }
