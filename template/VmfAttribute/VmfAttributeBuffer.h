@@ -49,7 +49,7 @@ class VmfAttributeBuffer {
          */
         void leftShift(size_t bits) {
             if (bits > 0 and bits < 64) {
-                size_t offset = CHAR_BIT - bits & 0x07;
+                size_t offset = CHAR_BIT - (bits & 0x07);
                 uint8_t cyclicByte = U8[SZU64] >> offset;
                 U8[SZU64] = U8[u64HighByte] >> offset;
                 U64 <<= bits;
@@ -58,7 +58,7 @@ class VmfAttributeBuffer {
         }
         void rightShift(size_t bits) {
             if (bits > 0 and bits < 64) {
-                size_t offset = CHAR_BIT - bits & 0x07;
+                size_t offset = CHAR_BIT - (bits & 0x07);
                 uint8_t cyclicByte = U8[SZU64] << offset;
                 U8[SZU64] = U8[u64LowByte] << offset;
                 U64 >>= bits;
@@ -101,8 +101,8 @@ class VmfAttributeBuffer {
         }
         void copyForData(uint8_t *buffer, size_t numBits, size_t bitInByte, size_t currentByte) {
             if (bitInByte >= 0 and bitInByte < CHAR_BIT) {
-                uint8_t preBitsMask = MSG_BYTE_MASK[bitInByte];
-                //alignForMessageBits(numBits);
+                // uint8_t preBitsMask = MSG_BYTE_MASK[bitInByte];
+                // alignForMessageBits(numBits);
                 size_t totalBits = bitInByte + numBits;
                 size_t copyBytes = (totalBits >> 3) + ((totalBits & 0x07) != 0);
                 size_t newBitInByte = totalBits & 7;
@@ -263,11 +263,11 @@ class VmfAttributeBuffer {
 
     bool getBits(uint64_t &bits, size_t numBits) {
         bool retVal = false;
-        int endingPos = numBits + bitInByte_;
-        size_t newBitInByte = static_cast<size_t>(endingPos & 0x7);
+        //int endingPos = numBits + bitInByte_;
+        //size_t newBitInByte = static_cast<size_t>(endingPos & 0x7);
         //check numBits
-        size_t requiredBytes = static_cast<size_t>((endingPos >> 3) +
-                               (newBitInByte != 0));
+        // size_t requiredBytes = static_cast<size_t>((endingPos >> 3) +
+        //                        (newBitInByte != 0));
         size_t newConBitSz = getCurrentBitPos() + numBits;
         //VmfDebug("newConBitSz=",newConBitSz);
         //VmfDebug("currentConBitSize=",getContentBitSize());
