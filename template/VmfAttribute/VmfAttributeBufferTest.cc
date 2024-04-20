@@ -1,7 +1,7 @@
-#include <gtest/gtest.h>
-#include <gmock/gmock.h>  // Brings in gMock.
-
 #include "VmfAttributeBuffer.h"
+#include <gmock/gmock.h>  // Brings in gMock.
+#include <gtest/gtest.h>
+
 
 
 TEST(VmfAttributeBufferTest, ENDIAN) {
@@ -61,6 +61,7 @@ TEST(VmfAttributeBufferTest, getContentSize) {
 
 TEST(VmfAttributeBufferTest, appendBit) {
     uint8_t buf[256];
+    memset(buf, 0, 256);
     VmfAttributeBuffer myBuffer(buf, 256);
     EXPECT_TRUE(myBuffer.appendBit(1));
     EXPECT_EQ(0x01, buf[0]);
