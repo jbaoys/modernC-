@@ -1,5 +1,5 @@
 #include <gtest/gtest.h>
-//#include <gmock/gmock.h>  // Brings in gMock.
+#include <gmock/gmock.h>  // Brings in gMock.
 
 #include "VmfAttribute.h"
 #if 0
