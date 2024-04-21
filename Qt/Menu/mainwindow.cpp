@@ -2,6 +2,7 @@
 #include "./ui_mainwindow.h"
 #include <QLayout>
 #include <iostream>
+#include <QHeaderView>
 
 struct debugTagData
 {
@@ -92,6 +93,7 @@ void MainWindow::PopulateDebugTags(QWidget* w)
     debugTags_->setColumnCount(3);
     debugTags_->setHorizontalHeaderLabels(headerLabels);
     debugTags_->resize(dbgTableWidth, dbgTableHigh);
+    debugTags_->verticalHeader()->hide();
     for (uint32_t i=0; i<tagSize; i++)
     {
         QTableWidgetItem *nameItem = new QTableWidgetItem(darray[i].name);
