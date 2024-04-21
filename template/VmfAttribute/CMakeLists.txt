@@ -6,6 +6,9 @@ set(CMAKE_CXX_STANDARD 17)
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
 set(CMAKE_CXX_FLAGS "-g -O0 -Wall -fprofile-arcs -ftest-coverage --coverage")
 
+#option to build googletest
+include(../../buildLocalGtest.cmake)
+
 add_executable(
     ${PROJECT_NAME}
     VmfDebug.cc
