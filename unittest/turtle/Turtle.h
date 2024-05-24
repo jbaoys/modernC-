@@ -11,6 +11,12 @@
  * @date 2024-04-20
  * @copyright Copyright (c) 2024
  */
+struct Point {
+    Point() : x(0), y(0) {}
+    Point(int xx, int yy) : x(xx), y(yy) {}
+    int x;
+    int y;
+};
 class Turtle {
 public:
     Turtle() {}
@@ -23,4 +29,6 @@ public:
     virtual void Circle(int radius) = 0;
     virtual int GetX() const = 0;
     virtual int GetY() const = 0;
+    virtual bool GetPosition(Point &point) const = 0;
+    virtual bool IsPenDown() const = 0;
 };

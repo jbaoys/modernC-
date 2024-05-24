@@ -16,4 +16,6 @@ class MockTurtle : public Turtle {
     MOCK_METHOD(void, GoTo, (int x, int y), (override));
     MOCK_METHOD(int, GetX, (), (const, override));
     MOCK_METHOD(int, GetY, (), (const, override));
+    MOCK_METHOD(bool, GetPosition, (Point& position), (const, override));
+    MOCK_METHOD(bool, IsPenDown, (), (const, override));
 };
