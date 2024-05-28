@@ -35,9 +35,19 @@ TEST(PainterTest, CanDrawSomething) {
 }
 
 TEST(PainterTest, DrawNextStroke) {
-    NiceMock<MockTurtle> turtle;    
+    NiceMock<MockTurtle> turtle;
 
-    //EXPECT_CALL(turtle, PenUp()).Times(AtLeast(1));
+    // Use lambda expression to set point
+    EXPECT_CALL(turtle, GetPosition(_)).WillOnce([](Point& p) { p = Point(11, 22); return true; });
+    EXPECT_CALL(turtle, IsPenDown()).WillOnce(Return(false));
+    Painter painter(turtle, 100, 100);
+    EXPECT_FALSE(painter.DrawNextStroke(Point(10,20)));
+}
+
+TEST(PainterTest, DrawNextStroke1) {
+    NiceMock<MockTurtle> turtle;
+
+    // Use gmock action macro to set point
     EXPECT_CALL(turtle, GetPosition(_)).WillOnce(setPoint(11, 22));
     EXPECT_CALL(turtle, IsPenDown()).WillOnce(Return(false));
     Painter painter(turtle, 100, 100);
@@ -45,7 +55,7 @@ TEST(PainterTest, DrawNextStroke) {
 }
 
 TEST(PainterTest, DrawNextStroke2) {
-    NiceMock<MockTurtle> turtle;    
+    NiceMock<MockTurtle> turtle;
 
     EXPECT_CALL(turtle, GetPosition(_)).WillOnce(setPoint(11, 22));
     EXPECT_CALL(turtle, GoTo(_,_)).Times(AtLeast(1));
