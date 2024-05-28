@@ -15,6 +15,15 @@ using ::testing::Return;
 using ::testing::Test;
 using ::testing::_;
 using ::testing::DoAll;
+
+/**
+ * Turtle::GetPosition() action: Set point using gmock action macro
+ * @param arg0: Point to set. This is a reference of Turtle::GetPosition()
+ *              argument.
+ * @param x: x coordinate
+ * @param y: y coordinate
+ * @return true
+ */
 ACTION_P2(setPoint, x,  y) {
     arg0.x = x;
     arg0.y = y;
