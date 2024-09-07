@@ -9,8 +9,8 @@
 3. use `r` to run
 4. use `p <variable name>` to print variable
 5. use `l' to print current source code context
-6. use `<enter>' to continue last command
-7. use `c` to continue
+6. use `<enter>` to continue last command
+7. use `c` to continue running from the current break point
 8. use `bt` to print stack trace
 9. use `s` to step into function
 10. use `n` to step next line of code (without stepping into function)
