@@ -30,6 +30,14 @@ ACTION_P2(setPoint, x,  y) {
     return true;
 }
 
+MATCHER_P(PointEq, x, "") {
+    return arg == x;
+}
+
+MATCHER_P(PointNe, x, "") {
+    return arg != x;
+}
+
 TEST(PainterTest, CanDrawSomething) {
     MockTurtle turtle;                              // #2
     EXPECT_CALL(turtle, PenDown())                  // #3
@@ -73,6 +81,18 @@ TEST(PainterTest, DrawNextStroke2) {
     EXPECT_TRUE(painter.DrawNextStroke(Point(10,20)));
 }
 
+TEST(PainterTest, DrawMutilpleStrokes) {
+    NiceMock<MockTurtle> turtle;
+    EXPECT_CALL(turtle, GetPosition(_)).WillRepeatedly(setPoint(1, 2));
+    // Use the PointEq and PointNe matcher to rule out only expected point - (10,20)
+    EXPECT_CALL(turtle, GoTo(PointEq(10), PointEq(20))).Times(1);
+    EXPECT_CALL(turtle, GoTo(PointNe(10), PointNe(20))).Times(AtLeast(1));
+
+    EXPECT_CALL(turtle, IsPenDown()).WillRepeatedly(Return(true));
+    Painter painter(turtle, 100, 100);
+    std::vector<Point> points = {Point(10, 20), Point(11, 21), Point(12, 22), Point(13, 23), Point(14, 24), Point(15, 25), Point(16, 26)};
+    EXPECT_TRUE(painter.drawMultipleStrokes(points));
+}
 // int main( int argc, char *argv[] ) {
 //     ::testing::InitGoogleMock( &argc, argv );
 //     return RUN_ALL_TESTS( );

@@ -66,6 +66,14 @@ class Painter {
         }
     }
 
+    bool drawMultipleStrokes(std::vector<Point> points) {
+        for (int i = 0; i < static_cast<int>(points.size()); i++) {
+            if (!DrawNextStroke(points[i])) {
+                return false;
+            }
+        }
+        return true;
+    }
    private:
     Turtle& turtle_; //!< turtle
     int canvasWidth;
