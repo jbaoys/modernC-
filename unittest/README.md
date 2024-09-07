@@ -5,7 +5,7 @@
 
 ## gdb debug
 1. run command `gdb ../bd/turtleTest`
-2. use `b <file name>:<line number>`` to set breakpoint
+2. use `b <file name>:<line number>` to set breakpoint
 3. use `r` to run
 4. use `p <variable name>` to print variable
 5. use `l' to print current source code context
